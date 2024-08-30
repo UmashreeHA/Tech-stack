@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section>
+  <article>
+    <!-- Add your code in the line below  -->
+    <h1>Make a Reservation</h1>
+
+    <!--Begin row-->
+    <div class="row">
+      <!--Begin col-->
+      <div class="column">
+        <form action="" method="post">
+          {% csrf_token %}
+          {{form.as_p}}
+          <input type="submit" id="button">
+        </form>
+      </div>
+      <!--End col-->
+
+      <!--Begin col-->
+      <div class="column">
+        <div class="videowrap">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11898.289517452584!2d-87.60853049433447!3d41.79442860243028!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2912ce6f7027%3A0xc0cfb5545d4a37b2!2sHyde%20Park%2C%20Chicago%2C%20IL%2C%20USA!5e0!3m2!1sen!2spt!4v1662384760663!5m2!1sen!2spt"
+            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+      <!--End col-->
+    </div>
+    <!--End row-->
+  </article>
+</section>
+<!-- Add your code inside the script tags below  -->
+<script>
+  // Part 1: Replace reservation date paragraph similar to first name
+  const reservationDateElement = document.getElementById('id_reservation_date');
+  reservationDateElement.addEventListener('change', function () {
+    getBookings();
+  });
+
+  // Part 2: Update bookings information based on fetched data
+  function getBookings() {
+    const date = reservationDateElement.value;
+    fetch(`/restaurant/bookings/?date=${date}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        const reservedSlots = [];
+        let bookings = '';
+
+        data.forEach(item => {
+          console.log(item.fields);
+          reservedSlots.push(item.fields.reservation_slot);
+          bookings += `<p>${item.fields.first_name} - ${formatTime(item.fields.reservation_slot)}</p>`;
+        });
+
+        const slotOptions = '<option value="0" disabled>Select time</option>';
+        for (let i = 10; i < 20; i++) {
+          const label = formatTime(i);
+          if (reservedSlots.includes(i)) {
+            slotOptions += `<option value=${i} disabled>${label}</option>`;
+          } else {
+            slotOptions += `<option value=${i}>${label}</option>`;
+          }
+        }
+        document.getElementById('id_reservation_slot').innerHTML = slotOptions;
+        document.getElementById('bookings_list').innerHTML = bookings;
+      });
+  }
+
+  // Helper function to format time
+  function formatTime(slot) {
+    const hours = Math.floor(slot / 2);
+    const minutes = (slot % 2) === 0 ? '00' : '30';
+    return `${hours}:${minutes}`;
+  }
+</script>
+{% endblock %}
